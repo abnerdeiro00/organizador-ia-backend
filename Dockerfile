@@ -1,7 +1,7 @@
-# Imagem base oficial do Python
+# Imagem base leve com Python
 FROM python:3.10-slim
 
-# Instala o Tesseract com idioma português + dependências básicas
+# Instala o Tesseract OCR com idioma português e dependências
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-por \
@@ -15,11 +15,11 @@ RUN apt-get update && apt-get install -y \
 # Cria diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos
+# Copia os arquivos do projeto para dentro do container
 COPY . .
 
-# Instala dependências do Python
+# Instala as dependências do Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Comando para iniciar o FastAPI com Uvicorn na porta padrão Railway
+# Comando para iniciar o FastAPI na porta dinâmica do Railway
 CMD uvicorn main:app --host 0.0.0.0 --port=${PORT}
