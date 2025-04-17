@@ -9,7 +9,6 @@ import io
 import csv
 from datetime import datetime
 import json
-import subprocess
 
 app = FastAPI()
 
@@ -33,22 +32,14 @@ CSV_FILENAME = "analises_ia.csv"
 ONEDRIVE_FOLDER = "/OrganizadorIA"
 
 PROMPT_PADRAO = (
-    "Você é um organizador de arquivos inteligente. Dado o conteúdo abaixo, retorne um JSON com:
-"
-    "- 'nome_sugerido': nome adequado do arquivo
-"
-    "- 'resumo': de 3 a 10 frases conforme necessário
-"
-    "- 'categoria': ex: Clientes, Projetos, Financeiro...
-"
-    "- 'caminho_destino': pasta destino sugerida
-"
-    "- 'tags': lista de palavras-chave
-"
-    "- 'tipo_documento': ex: 1ª edição, cópia, final
-"
-    "- 'duplicado_de': nome de possível original, se for o caso
-"
+    "Você é um organizador de arquivos inteligente. Dado o conteúdo abaixo, retorne um JSON com:\n"
+    "- 'nome_sugerido': nome adequado do arquivo\n"
+    "- 'resumo': de 3 a 10 frases conforme necessário\n"
+    "- 'categoria': ex: Clientes, Projetos, Financeiro...\n"
+    "- 'caminho_destino': pasta destino sugerida\n"
+    "- 'tags': lista de palavras-chave\n"
+    "- 'tipo_documento': ex: 1ª edição, cópia, final\n"
+    "- 'duplicado_de': nome de possível original, se for o caso\n"
     "Use português e responda apenas o JSON."
 )
 
@@ -107,18 +98,6 @@ async def analisar_arquivo(file: UploadFile = File(...)):
             return {"erro": "Resposta inesperada da IA", "resposta_bruta": resposta}
     except Exception as e:
         return {"erro": "Falha geral", "detalhes": str(e)}
-
-@app.post("/varrer")
-def iniciar_varredura():
-    try:
-        resultado = subprocess.run(["python", "varredor_onedrive.py"], capture_output=True, text=True)
-        return {
-            "status": "executado",
-            "stdout": resultado.stdout,
-            "stderr": resultado.stderr
-        }
-    except Exception as e:
-        return {"erro": str(e)}
 
 def gerar_token_onedrive():
     data = {
