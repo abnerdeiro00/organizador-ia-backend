@@ -8,6 +8,7 @@ from PIL import Image
 import io
 import csv
 from datetime import datetime
+import json
 
 app = FastAPI()
 
@@ -23,9 +24,9 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key={API_KEY}"
 
 # OneDrive API
-CLIENT_ID = "cc9f2a36-5397-4ef1-8824-4b5f0bb2d3c1"
-TENANT_ID = "f3a346e1-e2fb-48db-9358-599bf6a518c6"
-CLIENT_SECRET = "QwE8Q~MPYDmkM~R2nByOhZ9XV.YHYmcsEKvjKcEw"
+CLIENT_ID = os.getenv("ONEDRIVE_CLIENT_ID")
+TENANT_ID = os.getenv("ONEDRIVE_TENANT_ID")
+CLIENT_SECRET = os.getenv("ONEDRIVE_CLIENT_SECRET")
 SCOPE = "https://graph.microsoft.com/.default"
 TOKEN_ENDPOINT = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
 GRAPH_ENDPOINT = "https://graph.microsoft.com/v1.0"
@@ -64,22 +65,14 @@ def enviar_para_onedrive(access_token):
     return response.json()
 
 PROMPT_PADRAO = (
-    "Você é um organizador de arquivos inteligente. Dado o conteúdo abaixo, retorne um JSON com:
-"
-    "- 'nome_sugerido': nome adequado do arquivo
-"
-    "- 'resumo': até 3 frases
-"
-    "- 'categoria': ex: Clientes, Projetos, Financeiro...
-"
-    "- 'caminho_destino': pasta destino sugerida
-"
-    "- 'tags': lista de palavras-chave
-"
-    "- 'tipo_documento': ex: 1ª edição, cópia, final
-"
-    "- 'duplicado_de': nome de possível original, se for o caso
-"
+    "Você é um organizador de arquivos inteligente. Dado o conteúdo abaixo, retorne um JSON com:\n"
+    "- 'nome_sugerido': nome adequado do arquivo\n"
+    "- 'resumo': até 3 frases\n"
+    "- 'categoria': ex: Clientes, Projetos, Financeiro...\n"
+    "- 'caminho_destino': pasta destino sugerida\n"
+    "- 'tags': lista de palavras-chave\n"
+    "- 'tipo_documento': ex: 1ª edição, cópia, final\n"
+    "- 'duplicado_de': nome de possível original, se for o caso\n"
     "Use português e responda apenas o JSON."
 )
 
