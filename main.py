@@ -20,6 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 🔐 Configurações
 API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key={API_KEY}"
 
@@ -32,23 +33,16 @@ GRAPH_ENDPOINT = "https://graph.microsoft.com/v1.0"
 CSV_FILENAME = "analises_ia.csv"
 ONEDRIVE_FOLDER = "/OrganizadorIA"
 
+# ✅ Prompt atualizado
 PROMPT_PADRAO = (
-    "Você é um organizador de arquivos inteligente. Dado o conteúdo abaixo, retorne um JSON com:
-"
-    "- 'nome_sugerido': nome adequado do arquivo
-"
-    "- 'resumo': de 3 a 10 frases conforme necessário
-"
-    "- 'categoria': ex: Clientes, Projetos, Financeiro...
-"
-    "- 'caminho_destino': pasta destino sugerida
-"
-    "- 'tags': lista de palavras-chave
-"
-    "- 'tipo_documento': ex: 1ª edição, cópia, final
-"
-    "- 'duplicado_de': nome de possível original, se for o caso
-"
+    "Você é um organizador de arquivos inteligente. Dado o conteúdo abaixo, retorne um JSON com:\n"
+    "- 'nome_sugerido': nome adequado do arquivo\n"
+    "- 'resumo': de 3 a 10 frases conforme necessário\n"
+    "- 'categoria': ex: Clientes, Projetos, Financeiro...\n"
+    "- 'caminho_destino': pasta destino sugerida\n"
+    "- 'tags': lista de palavras-chave\n"
+    "- 'tipo_documento': ex: 1ª edição, cópia, final\n"
+    "- 'duplicado_de': nome de possível original, se for o caso\n"
     "Use português e responda apenas o JSON."
 )
 
