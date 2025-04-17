@@ -14,5 +14,5 @@ COPY . .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ⬅️ Porta fixa 8080 — compatível com Railway
-ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# 🔥 Aqui a mudança final!
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
