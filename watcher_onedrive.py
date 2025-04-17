@@ -1,4 +1,6 @@
 import time
+print("🚀 Watcher inicializado...")  # ← essa linha nova
+
 from varredor_onedrive import rodar_varredura
 
 if __name__ == "__main__":
