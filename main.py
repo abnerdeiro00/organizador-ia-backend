@@ -6,6 +6,8 @@ import fitz  # PyMuPDF
 import pytesseract
 from PIL import Image
 import io
+import csv
+from datetime import datetime
 
 app = FastAPI()
 
@@ -16,18 +18,68 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Gemini API
 API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key={API_KEY}"
 
+# OneDrive API
+CLIENT_ID = "cc9f2a36-5397-4ef1-8824-4b5f0bb2d3c1"
+TENANT_ID = "f3a346e1-e2fb-48db-9358-599bf6a518c6"
+CLIENT_SECRET = "QwE8Q~MPYDmkM~R2nByOhZ9XV.YHYmcsEKvjKcEw"
+SCOPE = "https://graph.microsoft.com/.default"
+TOKEN_ENDPOINT = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
+GRAPH_ENDPOINT = "https://graph.microsoft.com/v1.0"
+CSV_FILENAME = "analises_ia.csv"
+ONEDRIVE_FOLDER = "/OrganizadorIA"
+
+def gerar_token_onedrive():
+    data = {
+        "client_id": CLIENT_ID,
+        "scope": SCOPE,
+        "client_secret": CLIENT_SECRET,
+        "grant_type": "client_credentials"
+    }
+    response = requests.post(TOKEN_ENDPOINT, data=data)
+    response.raise_for_status()
+    return response.json()["access_token"]
+
+def salvar_csv_local(data: dict):
+    existe = os.path.exists(CSV_FILENAME)
+    with open(CSV_FILENAME, mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=data.keys())
+        if not existe:
+            writer.writeheader()
+        writer.writerow(data)
+
+def enviar_para_onedrive(access_token):
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "text/csv"
+    }
+    with open(CSV_FILENAME, "rb") as f:
+        csv_data = f.read()
+    upload_url = f"{GRAPH_ENDPOINT}/me/drive/root:{ONEDRIVE_FOLDER}/{CSV_FILENAME}:/content"
+    response = requests.put(upload_url, headers=headers, data=csv_data)
+    response.raise_for_status()
+    return response.json()
+
 PROMPT_PADRAO = (
-    "Você é um organizador de arquivos inteligente. Dado o conteúdo abaixo, retorne um JSON com:\n"
-    "- 'nome_sugerido': nome adequado do arquivo\n"
-    "- 'resumo': até 3 frases\n"
-    "- 'categoria': ex: Clientes, Projetos, Financeiro...\n"
-    "- 'caminho_destino': pasta destino sugerida\n"
-    "- 'tags': lista de palavras-chave\n"
-    "- 'tipo_documento': ex: 1ª edição, cópia, final\n"
-    "- 'duplicado_de': nome de possível original, se for o caso\n"
+    "Você é um organizador de arquivos inteligente. Dado o conteúdo abaixo, retorne um JSON com:
+"
+    "- 'nome_sugerido': nome adequado do arquivo
+"
+    "- 'resumo': até 3 frases
+"
+    "- 'categoria': ex: Clientes, Projetos, Financeiro...
+"
+    "- 'caminho_destino': pasta destino sugerida
+"
+    "- 'tags': lista de palavras-chave
+"
+    "- 'tipo_documento': ex: 1ª edição, cópia, final
+"
+    "- 'duplicado_de': nome de possível original, se for o caso
+"
     "Use português e responda apenas o JSON."
 )
 
@@ -67,6 +119,22 @@ async def analisar_arquivo(file: UploadFile = File(...)):
     response = requests.post(GEMINI_URL, headers=headers, json=payload)
 
     try:
-        return response.json()
-    except Exception:
-        return {"erro": "Resposta inválida da IA", "raw": response.text}
+        resposta = response.json()
+
+        if "candidates" in resposta:
+            content = resposta["candidates"][0]["content"]["parts"][0]["text"]
+            dados = json.loads(content)
+            dados["data_analise"] = datetime.now().isoformat()
+            salvar_csv_local(dados)
+
+            try:
+                token = gerar_token_onedrive()
+                enviar_para_onedrive(token)
+            except Exception as e:
+                return {"erro": "Falha ao enviar para OneDrive", "detalhes": str(e), "dados": dados}
+
+            return dados
+        else:
+            return {"erro": "Resposta inesperada da IA", "resposta_bruta": resposta}
+    except Exception as e:
+        return {"erro": "Falha geral", "detalhes": str(e)}
