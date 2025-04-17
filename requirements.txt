@@ -1,4 +1,7 @@
 fastapi
 uvicorn
-python-multipart
 requests
+python-multipart
+pytesseract
+pillow
+PyMuPDF
