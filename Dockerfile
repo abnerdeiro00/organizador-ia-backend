@@ -1,6 +1,5 @@
 FROM python:3.10-slim
 
-# Instala OCR + libs necessárias
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-por \
@@ -15,5 +14,5 @@ COPY . .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ✅ Usa shell nativa para interpretar $PORT corretamente
-ENTRYPOINT ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port=$PORT"]
+# ⬅️ Porta fixa 8080 — compatível com Railway
+ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
