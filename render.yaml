@@ -1,0 +1,6 @@
+services:
+  - type: worker
+    name: organizador-ia-watcher
+    env: docker
+    plan: free
+    autoDeploy: true
