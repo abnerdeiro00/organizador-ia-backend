@@ -14,4 +14,5 @@ COPY . .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Roda o watcher diretamente (mesmo em serviço web)
 CMD ["python", "watcher_onedrive.py"]
